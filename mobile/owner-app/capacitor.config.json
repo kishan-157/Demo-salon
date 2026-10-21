@@ -1,0 +1,9 @@
+{
+  "appId": "com.localboost.bellarose.owner",
+  "appName": "Bella Rose Owner",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

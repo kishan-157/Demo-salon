@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.BellaRoseCustomer" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#9E555A</item>
+        <item name="android:windowBackground">#FCF9F6</item>
+    </style>
+</resources>

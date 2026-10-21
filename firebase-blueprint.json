@@ -1,0 +1,95 @@
+{
+  "entities": {
+    "Booking": {
+      "title": "Booking",
+      "description": "A salon appointment booking request",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "serviceName": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerEmail": { "type": "string", "format": "email" },
+        "customerPhone": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "rejected", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" },
+        "price": { "type": "number" }
+      },
+      "required": ["serviceId", "customerName", "customerPhone", "date", "time", "status"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "A salon service offering",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string", "enum": ["hair", "skin", "beauty", "bridal"] },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "durationMinutes": { "type": "number" },
+        "image": { "type": "string" },
+        "popular": { "type": "boolean" }
+      },
+      "required": ["name", "category", "price", "durationMinutes"]
+    },
+    "SalonSettings": {
+      "title": "Salon Settings",
+      "description": "Global configuration for the salon",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "tagline": { "type": "string" },
+        "subheading": { "type": "string" },
+        "logoText": { "type": "string" },
+        "phone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "zip": { "type": "string" },
+        "googleMapsUrl": { "type": "string" }
+      }
+    },
+    "AppBuild": {
+      "title": "App Build",
+      "description": "Android application build information",
+      "type": "object",
+      "properties": {
+        "appId": { "type": "string", "enum": ["customer", "owner"] },
+        "version": { "type": "string" },
+        "status": { "type": "string", "enum": ["building", "ready", "failed", "not_generated"] },
+        "apkUrl": { "type": "string" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["appId", "status"]
+    }
+  },
+  "firestore": {
+    "bookings": {
+      "schema": "Booking",
+      "description": "Collection of all appointment bookings"
+    },
+    "services": {
+      "schema": "Service",
+      "description": "Collection of available salon services"
+    },
+    "settings": {
+      "schema": "SalonSettings",
+      "description": "Single document for global settings"
+    },
+    "appBuilds": {
+      "schema": "AppBuild",
+      "description": "Build status for the mobile applications"
+    },
+    "admins": {
+      "schema": { "type": "object", "properties": { "email": { "type": "string" } } },
+      "description": "Authorized administrators"
+    }
+  }
+}
