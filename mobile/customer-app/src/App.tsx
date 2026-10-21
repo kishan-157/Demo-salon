@@ -46,25 +46,52 @@ export default function CustomerApp() {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [bookingData, setBookingData] = useState({ date: '', time: '', name: '', phone: '' });
   const [user, setUser] = useState<any>(null);
+  const [salon, setSalon] = useState<any>({
+    name: 'Bella Rose Luxury Salon & Spa',
+    logoText: 'Bella Rose',
+    tagline: 'Where Elegance Meets Artisanal Beauty',
+    theme: { primaryColor: '#9E555A' }
+  });
 
   useEffect(() => {
+    // Fetch dynamic salon branding & theme
+    fetch('/api/salon')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.name) setSalon(data);
+      })
+      .catch(() => {});
+
     // Splash screen timer
-    const timer = setTimeout(() => setScreen('home'), 2000);
+    const timer = setTimeout(() => setScreen('home'), 1800);
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    // Auth & Data Sync
-    onAuthStateChanged(auth, (u) => {
+    // Auth & Data Sync (Safe Anonymous check)
+    const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
       setUser(u);
-      if (!u) signInAnonymously(auth);
+      if (!u) {
+        signInAnonymously(auth).catch(() => {
+          // Firebase anonymous auth restricted; customer app operates safely in public demo mode
+        });
+      }
     });
 
     const servicesUnsub = onSnapshot(collection(db, 'services'), (snap) => {
-      setServices(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service)));
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
+      if (data.length > 0) setServices(data);
+      else {
+        fetch('/api/services').then(r => r.json()).then(setServices).catch(() => {});
+      }
+    }, () => {
+      fetch('/api/services').then(r => r.json()).then(setServices).catch(() => {});
     });
 
-    return () => servicesUnsub();
+    return () => {
+      unsubscribeAuth();
+      servicesUnsub();
+    };
   }, []);
 
   useEffect(() => {
@@ -100,13 +127,22 @@ export default function CustomerApp() {
   // --- RENDER SCREENS ---
 
   if (screen === 'splash') {
+    const primaryBg = salon.theme?.primaryColor || '#9E555A';
     return (
-      <div className="h-screen bg-[#9E555A] flex flex-col items-center justify-center text-white animate-fadeIn">
-        <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center mb-6 backdrop-blur-md">
-          <Sparkles className="w-12 h-12" />
-        </div>
-        <h1 className="text-3xl font-serif font-bold tracking-widest uppercase">Bella Rose</h1>
-        <p className="text-rose-200 text-xs mt-2 font-medium tracking-widest">LUXURY SALON & SPA</p>
+      <div className="h-screen flex flex-col items-center justify-center text-white animate-fadeIn" style={{ backgroundColor: primaryBg }}>
+        {salon.logoImage ? (
+          <img src={salon.logoImage} alt={salon.logoText || salon.name} className="h-20 max-w-[200px] object-contain mb-6 drop-shadow" />
+        ) : (
+          <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center mb-6 backdrop-blur-md">
+            <Sparkles className="w-12 h-12" />
+          </div>
+        )}
+        <h1 className="text-3xl font-serif font-bold tracking-widest uppercase text-center px-4">
+          {salon.logoText || salon.name}
+        </h1>
+        <p className="text-rose-200 text-xs mt-2 font-medium tracking-widest uppercase text-center">
+          {salon.logoSubtitle || salon.tagline || 'LUXURY SALON & SPA'}
+        </p>
       </div>
     );
   }
@@ -115,17 +151,34 @@ export default function CustomerApp() {
     <div className="h-screen bg-[#FDF9F8] flex flex-col font-sans overflow-hidden">
       
       {/* Header */}
-      <div className="bg-white px-6 py-5 border-b border-[#EAD5D8] flex items-center justify-between shrink-0">
+      <div className="bg-white px-6 py-4 border-b border-[#EAD5D8] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           {screen !== 'home' && (
             <button onClick={() => setScreen('home')} className="p-1 hover:bg-rose-50 rounded-full">
               <ArrowLeft className="w-5 h-5 text-[#9E555A]" />
             </button>
           )}
-          <div>
-            <h2 className="text-xl font-serif font-bold text-[#2D2A29]">
-              {screen === 'home' ? 'Bella Rose' : screen.replace('-', ' ').toUpperCase()}
-            </h2>
+          <div className="flex items-center gap-2.5">
+            {salon.logoImage ? (
+              <img src={salon.logoImage} alt={salon.logoText} className="h-8 max-w-[90px] object-contain" />
+            ) : (
+              <div 
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-serif font-bold text-xs shadow-sm"
+                style={{ backgroundColor: salon.theme?.primaryColor || '#9E555A' }}
+              >
+                {salon.logoText ? salon.logoText.slice(0, 2).toUpperCase() : 'BR'}
+              </div>
+            )}
+            <div>
+              <h2 className="text-lg font-serif font-bold text-[#2D2A29] leading-tight">
+                {screen === 'home' ? (salon.logoText || salon.name) : screen.replace('-', ' ').toUpperCase()}
+              </h2>
+              {screen === 'home' && (
+                <p className="text-[9px] uppercase tracking-wider font-semibold text-[#8C6D6F]">
+                  {salon.logoSubtitle || 'Salon & Spa'}
+                </p>
+              )}
+            </div>
           </div>
         </div>
         <button onClick={() => setScreen('my-bookings')} className="relative p-2 bg-[#F4EBE1] rounded-full text-[#9E555A]">

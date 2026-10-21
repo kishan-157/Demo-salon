@@ -1,10 +1,10 @@
 import React from 'react';
-import { salonConfig } from '../config/salonConfig';
 import { useBooking } from '../context/BookingContext';
-import { ShieldCheck, MessageCircle, MapPin, Phone, Mail, Sparkles } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
+import { ShieldCheck, MessageCircle, MapPin, Phone, Mail } from 'lucide-react';
 
 export const Footer: React.FC = () => {
-  const { setIsOwnerViewOpen, getWhatsAppUrl } = useBooking();
+  const { settings, setIsOwnerViewOpen, getWhatsAppUrl } = useBooking();
 
   return (
     <footer className="bg-[#2D2A29] text-[#EAD5D8] pt-16 pb-12 border-t border-[#3D3A38]">
@@ -14,21 +14,14 @@ export const Footer: React.FC = () => {
           
           {/* Brand Col */}
           <div className="lg:col-span-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#9E555A] flex items-center justify-center text-white font-serif text-lg font-bold">
-                BR
-              </div>
-              <span className="text-2xl font-serif font-bold text-white">
-                {salonConfig.logoText}
-              </span>
-            </div>
+            <BrandLogo settings={settings} variant="light" size="lg" />
             <p className="text-sm text-[#B8A8A6] leading-relaxed">
-              {salonConfig.tagline}. Providing bespoke hair couture, advanced skin treatments, and artisanal beauty services in Beverly Hills.
+              {settings.tagline}. {settings.subheading}
             </p>
             <div className="pt-2">
               <button
                 onClick={() => setIsOwnerViewOpen(true)}
-                className="px-4 py-2 text-xs font-medium text-white bg-[#9E555A]/50 hover:bg-[#9E555A] rounded-full transition-colors flex items-center gap-2 border border-[#9E555A]"
+                className="px-4 py-2 text-xs font-medium text-white bg-[#9E555A]/50 hover:bg-[#9E555A] rounded-full transition-colors flex items-center gap-2 border border-[#9E555A] cursor-pointer"
               >
                 <ShieldCheck className="w-4 h-4 text-rose-200" />
                 <span>Open Salon Owner Portal</span>
@@ -42,7 +35,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2.5 text-sm text-[#B8A8A6]">
               <li><a href="#services" className="hover:text-white transition-colors">Services & Pricing</a></li>
               <li><a href="#gallery" className="hover:text-white transition-colors">Photo Gallery</a></li>
-              <li><button onClick={() => setIsOwnerViewOpen(true)} className="hover:text-white transition-colors text-left">Mobile App Previews</button></li>
+              <li><button onClick={() => setIsOwnerViewOpen(true)} className="hover:text-white transition-colors text-left cursor-pointer">Mobile App Previews</button></li>
               <li><a href="#testimonials" className="hover:text-white transition-colors">Guest Reviews</a></li>
               <li><a href="#faq" className="hover:text-white transition-colors">Frequently Asked Questions</a></li>
               <li><a href="#location" className="hover:text-white transition-colors">Location & Hours</a></li>
@@ -55,15 +48,15 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3 text-sm text-[#B8A8A6]">
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#9E555A] shrink-0 mt-1" />
-                <span>{salonConfig.address.full}</span>
+                <span>{settings.address?.full || 'Beverly Hills, CA'}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-[#9E555A] shrink-0" />
-                <a href={`tel:${salonConfig.phone}`} className="hover:text-white">{salonConfig.displayPhone}</a>
+                <a href={`tel:${settings.phone}`} className="hover:text-white">{settings.displayPhone || settings.phone}</a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-[#9E555A] shrink-0" />
-                <a href={`mailto:${salonConfig.email}`} className="hover:text-white">{salonConfig.email}</a>
+                <a href={`mailto:${settings.email}`} className="hover:text-white">{settings.email}</a>
               </li>
               <li className="pt-2">
                 <a
@@ -83,9 +76,9 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Copyright & Demo Notice */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#9E908E]">
-          <p>© {new Date().getFullYear()} {salonConfig.name}. All rights reserved. Crafted for LocalBoost AI.</p>
+          <p>© {new Date().getFullYear()} {settings.name}. All rights reserved.</p>
           <p className="text-[11px] bg-[#3D3A38] px-3 py-1.5 rounded-lg border border-[#4D4846]">
-            Single-Salon Demo Website. Reusable via `src/config/salonConfig.ts`.
+            Universal Customizable Salon & Spa Platform
           </p>
         </div>
 

@@ -503,6 +503,18 @@ async function startServer() {
       server: { middlewareMode: true },
       appType: 'spa',
     });
+    
+    // Support for /customer and /owner in dev
+    app.get(['/customer', '/customer/*'], (req, res, next) => {
+      req.url = '/mobile/customer-app/index.html';
+      next();
+    });
+    
+    app.get(['/owner', '/owner/*'], (req, res, next) => {
+      req.url = '/mobile/owner-app/index.html';
+      next();
+    });
+
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(__dirname, 'dist');

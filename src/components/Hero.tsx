@@ -1,10 +1,16 @@
 import React from 'react';
-import { salonConfig } from '../config/salonConfig';
 import { useBooking } from '../context/BookingContext';
 import { Calendar, Sparkles, Star, MapPin, Clock, Smartphone } from 'lucide-react';
 
 export const Hero: React.FC = () => {
-  const { setIsBookingModalOpen, setIsOwnerViewOpen } = useBooking();
+  const { settings, setIsBookingModalOpen, setIsOwnerViewOpen } = useBooking();
+
+  const eyebrow = settings.heroEyebrow || 'Beverly Hills Premier Beauty Destination';
+  const tagline = settings.tagline || 'Where Elegance Meets Artisanal Beauty';
+  const subheading = settings.subheading || 'Indulge in bespoke hair couture, rejuvenating skin treatments, and exquisite bridal styling crafted by master artisans.';
+  const heroImage = settings.heroImage || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1000&q=80';
+  const primaryColor = settings.theme?.primaryColor || '#9E555A';
+  const secondaryColor = settings.theme?.secondaryColor || '#854549';
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-[#F9F3F0] to-[#FCF9F6] py-16 lg:py-24 border-b border-[#EAD5D8]/40">
@@ -17,24 +23,25 @@ export const Hero: React.FC = () => {
             {/* Editorial Kicker */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E2A3A6]/15 border border-[#E2A3A6]/30 text-[#854549] text-xs font-semibold tracking-wider uppercase">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Beverly Hills Premier Beauty Destination</span>
+              <span>{eyebrow}</span>
             </div>
 
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#2D2A29] leading-[1.15] text-balance">
-              {salonConfig.tagline}
+              {tagline}
             </h1>
 
             {/* Subheading */}
             <p className="text-base sm:text-lg text-[#6A605E] max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-              {salonConfig.subheading}
+              {subheading}
             </p>
 
             {/* CTA Group */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
               <button
                 onClick={() => setIsBookingModalOpen(true)}
-                className="w-full sm:w-auto px-8 py-4 text-sm font-semibold text-white bg-[#9E555A] hover:bg-[#854549] rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-4 text-sm font-semibold text-white rounded-full shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                style={{ backgroundColor: primaryColor }}
               >
                 <Calendar className="w-4 h-4" />
                 <span>Book Your Appointment</span>
@@ -42,7 +49,8 @@ export const Hero: React.FC = () => {
 
               <button
                 onClick={() => setIsOwnerViewOpen(true)}
-                className="w-full sm:w-auto px-8 py-4 text-sm font-semibold text-[#9E555A] bg-rose-50 hover:bg-rose-100 border border-[#EAD5D8] rounded-full transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-4 text-sm font-semibold bg-rose-50 hover:bg-rose-100 border border-[#EAD5D8] rounded-full transition-all flex items-center justify-center gap-2 cursor-pointer"
+                style={{ color: primaryColor }}
               >
                 <Smartphone className="w-4 h-4" />
                 <span>Experience Mobile Apps</span>
@@ -52,7 +60,7 @@ export const Hero: React.FC = () => {
             {/* Trust Badges Bar */}
             <div className="pt-8 border-t border-[#EAD5D8]/50 grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0 text-center lg:text-left">
               <div>
-                <div className="flex items-center justify-center lg:justify-start gap-1 text-[#9E555A] font-serif font-bold text-lg">
+                <div className="flex items-center justify-center lg:justify-start gap-1 font-serif font-bold text-lg" style={{ color: primaryColor }}>
                   <Star className="w-4 h-4 fill-current" />
                   <span>4.9 / 5.0</span>
                 </div>
@@ -83,8 +91,8 @@ export const Hero: React.FC = () => {
               {/* Main Image Container with elegant border & fallback */}
               <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-[#EAD5D8]/30 relative group">
                 <img
-                  src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1000&q=80"
-                  alt="Bella Rose Luxury Salon Interior"
+                  src={heroImage}
+                  alt={settings.name || 'Luxury Salon Interior'}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"
                 />
@@ -99,7 +107,7 @@ export const Hero: React.FC = () => {
                   </h3>
                   <div className="flex items-center gap-4 mt-2 text-xs text-rose-100/90">
                     <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5" /> Beverly Hills, CA
+                      <MapPin className="w-3.5 h-3.5" /> {settings.address?.city || 'Beverly Hills'}, {settings.address?.state || 'CA'}
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" /> Open Today till 8 PM
@@ -110,8 +118,8 @@ export const Hero: React.FC = () => {
 
               {/* Floating Accent Card */}
               <div className="absolute -bottom-6 -left-6 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-[#EAD5D8] hidden sm:flex items-center gap-4 max-w-xs">
-                <div className="w-12 h-12 rounded-full bg-[#E2A3A6]/20 flex items-center justify-center text-[#9E555A] font-serif font-bold">
-                  VIP
+                <div className="w-12 h-12 rounded-full flex items-center justify-center font-serif font-bold text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
+                  {settings.logoText ? settings.logoText.slice(0, 2).toUpperCase() : 'BR'}
                 </div>
                 <div>
                   <div className="text-xs font-semibold text-[#2D2A29]">Complimentary Consultation</div>

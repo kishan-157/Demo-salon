@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useBooking } from '../context/BookingContext';
+import { BrandLogo } from './BrandLogo';
 import { Calendar, ShieldCheck, Menu, X, MessageCircle } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -10,19 +11,9 @@ export const Navbar: React.FC = () => {
     <header className="sticky top-0 z-40 bg-[#FCF9F6]/95 backdrop-blur-md border-b border-[#EAD5D8]/60 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-8">
         
-        {/* Zone 1: Brand Wordmark */}
+        {/* Zone 1: Brand Wordmark / Dynamic Logo */}
         <a href="#" className="flex items-center gap-3 shrink-0 group">
-          <div className="w-10 h-10 rounded-full bg-[#E2A3A6]/20 border border-[#E2A3A6]/40 flex items-center justify-center text-[#9E555A] font-serif text-lg font-bold group-hover:bg-[#E2A3A6]/30 transition-colors">
-            {settings.logoText.slice(0, 2).toUpperCase()}
-          </div>
-          <div>
-            <span className="text-xl sm:text-2xl font-serif font-bold tracking-tight text-[#2D2A29] whitespace-nowrap">
-              {settings.logoText}
-            </span>
-            <span className="block text-[10px] tracking-widest uppercase text-[#8C6D6F]">
-              Luxury Salon & Spa
-            </span>
-          </div>
+          <BrandLogo settings={settings} size="md" />
         </a>
 
         {/* Zone 2: Navigation Links */}

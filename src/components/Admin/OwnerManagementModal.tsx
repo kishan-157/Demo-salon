@@ -6,11 +6,13 @@ import { AdminBookings } from './AdminBookings';
 import { AdminServices } from './AdminServices';
 import { AdminSettings } from './AdminSettings';
 import { AdminMobileApps } from './AdminMobileApps';
-import { ShieldCheck, X, LayoutDashboard, Calendar, Scissors, Settings, Smartphone, LogOut, Sparkles } from 'lucide-react';
+import { AdminThemeEditor } from './AdminThemeEditor';
+import { BrandLogo } from '../BrandLogo';
+import { ShieldCheck, X, LayoutDashboard, Calendar, Scissors, Settings, Smartphone, LogOut, Sparkles, Palette } from 'lucide-react';
 
 export const OwnerManagementModal: React.FC = () => {
   const { isOwnerViewOpen, setIsOwnerViewOpen, isAdminLoggedIn, logoutAdmin, settings } = useBooking();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings' | 'services' | 'settings' | 'mobile-apps'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings' | 'services' | 'theme' | 'settings' | 'mobile-apps'>('dashboard');
 
   if (!isOwnerViewOpen) return null;
 
@@ -20,18 +22,16 @@ export const OwnerManagementModal: React.FC = () => {
         
         {/* Top Header Bar */}
         <div className="bg-[#2D2A29] text-white px-6 py-4 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#9E555A] text-white flex items-center justify-center font-serif font-bold text-lg">
-              {settings.logoText.slice(0, 2).toUpperCase()}
-            </div>
-            <div>
+          <div className="flex items-center gap-4">
+            <BrandLogo settings={settings} variant="light" size="sm" showSubtitle={false} />
+            <div className="border-l border-white/20 pl-4 hidden sm:block">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-serif font-bold">{settings.name} — Admin Portal</h3>
+                <h3 className="text-sm font-serif font-bold text-white">{settings.name} — Management</h3>
                 <span className="px-2 py-0.5 rounded-full bg-rose-900/60 text-rose-200 text-[10px] font-semibold tracking-wider uppercase border border-rose-700/50">
-                  Demo Mode
+                  Owner Portal
                 </span>
               </div>
-              <p className="text-xs text-[#B8A8A6]">Single-Salon Commercial Demonstration</p>
+              <p className="text-[11px] text-[#B8A8A6]">Universal Brand & Business Command Center</p>
             </div>
           </div>
 
@@ -75,6 +75,7 @@ export const OwnerManagementModal: React.FC = () => {
                       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
                       { id: 'bookings', label: 'Bookings', icon: Calendar },
                       { id: 'services', label: 'Services & Prices', icon: Scissors },
+                      { id: 'theme', label: 'Theme & Logo Editor', icon: Palette },
                       { id: 'mobile-apps', label: 'Mobile Apps', icon: Smartphone },
                       { id: 'settings', label: 'Salon Settings', icon: Settings }
                     ].map((tab) => {
@@ -84,7 +85,7 @@ export const OwnerManagementModal: React.FC = () => {
                         <button
                           key={tab.id}
                           onClick={() => setActiveTab(tab.id as any)}
-                          className={`w-full px-4 py-3 rounded-2xl text-xs font-semibold flex items-center gap-3 transition-all whitespace-nowrap ${
+                          className={`w-full px-4 py-3 rounded-2xl text-xs font-semibold flex items-center gap-3 transition-all whitespace-nowrap cursor-pointer ${
                             isActive
                               ? 'bg-[#9E555A] text-white shadow-sm'
                               : 'text-[#595250] hover:bg-[#F9F3F0]'
@@ -99,9 +100,9 @@ export const OwnerManagementModal: React.FC = () => {
                 </div>
 
                 <div className="hidden md:block p-4 rounded-2xl bg-[#FCF9F6] border border-[#EAD5D8] text-xs space-y-2">
-                  <div className="font-serif font-bold text-[#2D2A29]">Single-Salon Demo</div>
+                  <div className="font-serif font-bold text-[#2D2A29]">Live Brand Synchronization</div>
                   <p className="text-[#6A605E] text-[11px] leading-relaxed">
-                    All changes update the customer-facing website instantly in demo memory.
+                    Custom logo, colors, and styling synchronize seamlessly across the Website, Customer App, and Owner App.
                   </p>
                 </div>
               </div>
@@ -111,6 +112,7 @@ export const OwnerManagementModal: React.FC = () => {
                 {activeTab === 'dashboard' && <AdminDashboard setActiveTab={setActiveTab} />}
                 {activeTab === 'bookings' && <AdminBookings />}
                 {activeTab === 'services' && <AdminServices />}
+                {activeTab === 'theme' && <AdminThemeEditor />}
                 {activeTab === 'mobile-apps' && <AdminMobileApps />}
                 {activeTab === 'settings' && <AdminSettings />}
               </div>

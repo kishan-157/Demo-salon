@@ -13,7 +13,12 @@ export interface SalonConfig {
   name: string;
   tagline: string;
   subheading: string;
+  heroEyebrow?: string;
+  heroImage?: string;
   logoText: string;
+  logoSubtitle?: string;
+  logoImage?: string;
+  logoIcon?: 'monogram' | 'sparkles' | 'scissors' | 'crown' | 'gem' | 'flower' | 'heart' | 'star';
   phone: string;
   displayPhone: string;
   whatsappNumber: string; // e.g. "15550198234" (numeric for whatsapp link)
@@ -40,8 +45,13 @@ export interface SalonConfig {
   closedDays: string[];
   theme: {
     primaryColor: string;
+    secondaryColor?: string;
     accentColor: string;
     backgroundColor: string;
+    textColor?: string;
+    fontHeading?: 'serif' | 'sans' | 'playfair' | 'editorial';
+    borderRadius?: 'full' | '2xl' | 'lg' | 'sm';
+    themePreset?: string;
   };
   services: ServiceItem[];
   gallery: {
@@ -68,7 +78,12 @@ export const salonConfig: SalonConfig = {
   name: "Bella Rose Luxury Salon & Spa",
   tagline: "Where Elegance Meets Artisanal Beauty",
   subheading: "Indulge in bespoke hair couture, rejuvenating skin treatments, and exquisite bridal styling crafted by master artisans.",
+  heroEyebrow: "Beverly Hills Premier Beauty Destination",
+  heroImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1000&q=80",
   logoText: "Bella Rose",
+  logoSubtitle: "Luxury Salon & Spa",
+  logoImage: "",
+  logoIcon: "monogram",
   phone: "+1 (555) 382-9400",
   displayPhone: "+1 (555) 382-9400",
   whatsappNumber: "15553829400",
@@ -94,9 +109,14 @@ export const salonConfig: SalonConfig = {
   },
   closedDays: ["Major Holidays"],
   theme: {
-    primaryColor: "#E2A3A6", // Rose pink
-    accentColor: "#F4EBE1", // Soft warm ivory
-    backgroundColor: "#FCF9F6"
+    primaryColor: "#9E555A", // Elegant Rosewood Pink
+    secondaryColor: "#854549", // Deep Rosewood
+    accentColor: "#F4EBE1", // Soft Warm Ivory
+    backgroundColor: "#FCF9F6", // Warm Cream
+    textColor: "#2D2A29", // Espresso Charcoal
+    fontHeading: "serif",
+    borderRadius: "full",
+    themePreset: "rose-gold"
   },
   services: [
     {

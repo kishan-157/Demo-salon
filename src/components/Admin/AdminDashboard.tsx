@@ -2,7 +2,7 @@ import React from 'react';
 import { useBooking } from '../../context/BookingContext';
 import { Calendar, Clock, CheckCircle2, XCircle, AlertCircle, Sparkles, ArrowRight, DollarSign, Users, Scissors } from 'lucide-react';
 
-export const AdminDashboard: React.FC<{ setActiveTab: (tab: 'dashboard' | 'bookings' | 'services' | 'settings' | 'mobile-apps') => void }> = ({ setActiveTab }) => {
+export const AdminDashboard: React.FC<{ setActiveTab: (tab: 'dashboard' | 'bookings' | 'services' | 'theme' | 'settings' | 'mobile-apps') => void }> = ({ setActiveTab }) => {
   const { bookings, services, settings } = useBooking();
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -34,10 +34,17 @@ export const AdminDashboard: React.FC<{ setActiveTab: (tab: 'dashboard' | 'booki
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => setActiveTab('theme')}
+            className="px-4 py-2.5 bg-white hover:bg-rose-50 text-[#9E555A] border border-[#EAD5D8] text-xs font-bold rounded-full shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <span>Customize Theme & Logo</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
           <button
             onClick={() => setActiveTab('bookings')}
-            className="px-5 py-2.5 bg-[#9E555A] hover:bg-[#854549] text-white text-xs font-semibold rounded-full shadow-sm transition-all flex items-center gap-2"
+            className="px-5 py-2.5 bg-[#9E555A] hover:bg-[#854549] text-white text-xs font-semibold rounded-full shadow-sm transition-all flex items-center gap-2 cursor-pointer"
           >
             <span>Manage Bookings ({pendingRequests.length} Pending)</span>
             <ArrowRight className="w-4 h-4" />

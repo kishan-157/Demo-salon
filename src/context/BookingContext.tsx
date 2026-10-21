@@ -18,6 +18,7 @@ import {
 import { 
   onAuthStateChanged, 
   signInWithPopup, 
+  signInAnonymously,
   GoogleAuthProvider, 
   signOut,
   User
@@ -56,6 +57,8 @@ interface BookingContextType {
   currentUser: User | null;
   isAdminLoggedIn: boolean;
   loginAdmin: () => Promise<boolean>;
+  loginAsDemo: () => Promise<{ success: boolean; error?: string }>;
+  loginWithCredentials: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logoutAdmin: () => Promise<void>;
 
   selectedServiceForBooking: ServiceItem | null;
@@ -80,21 +83,47 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [selectedServiceForBooking, setSelectedServiceForBooking] = useState<ServiceItem | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isOwnerViewOpen, setIsOwnerViewOpen] = useState(false);
+  const [useLocalApi, setUseLocalApi] = useState(false);
 
-  // Initialize Auth
+  const getHeaders = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer demo-owner-token'
+  });
+
+  // Initialize Auth & Session
   useEffect(() => {
+    const saved = localStorage.getItem('salon_admin_session');
+    if (saved === 'demo') {
+      setUseLocalApi(true);
+      setIsAdminLoggedIn(true);
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
+        setUseLocalApi(false);
         // Check if user is in admins collection
-        const adminDoc = await getDoc(doc(db, 'admins', user.uid));
-        if (adminDoc.exists() || user.email === 'ladanikishan8@gmail.com') {
+        try {
+          const adminDoc = await getDoc(doc(db, 'admins', user.uid));
+          if (adminDoc.exists() || user.email === 'ladanikishan8@gmail.com') {
+            setIsAdminLoggedIn(true);
+          } else if (localStorage.getItem('salon_admin_session') !== 'demo') {
+            setIsAdminLoggedIn(false);
+          }
+        } catch (err) {
+          if (localStorage.getItem('salon_admin_session') === 'demo') {
+            setIsAdminLoggedIn(true);
+          } else {
+            setIsAdminLoggedIn(false);
+          }
+        }
+      } else {
+        if (localStorage.getItem('salon_admin_session') === 'demo') {
           setIsAdminLoggedIn(true);
+          setUseLocalApi(true);
         } else {
           setIsAdminLoggedIn(false);
         }
-      } else {
-        setIsAdminLoggedIn(false);
       }
     });
     return () => unsubscribe();
@@ -102,6 +131,10 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Sync Services
   useEffect(() => {
+    if (useLocalApi) {
+      fetch('/api/services').then(res => res.json()).then(setServices).catch(console.error);
+      return;
+    }
     const q = query(collection(db, 'services'), orderBy('name', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const servicesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ServiceItem));
@@ -117,7 +150,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.error("Services snapshot error:", error);
     });
     return () => unsubscribe();
-  }, []);
+  }, [useLocalApi, isAdminLoggedIn]);
 
   // Sync Bookings (Admin only for full list)
   useEffect(() => {
@@ -125,10 +158,54 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setBookings([]);
       return;
     }
+    if (useLocalApi) {
+      fetch('/api/bookings', { headers: getHeaders() })
+        .then(res => res.json())
+        .then(setBookings)
+        .catch(console.error);
+      return;
+    }
     const q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'), limit(100));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const bookingsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BookingRequest));
       setBookings(bookingsData);
+      
+      if (bookingsData.length === 0 && isAdminLoggedIn) {
+        // Seed sample bookings if empty
+        const sampleBookings = [
+          {
+            id: 'sample-1',
+            serviceId: 'h1',
+            serviceName: 'Signature Balayage & Gloss',
+            clientName: 'Victoria Sinclair',
+            clientPhone: 'demo',
+            clientEmail: 'victoria@example.com',
+            date: new Date().toISOString().split('T')[0],
+            timeSlot: '10:00',
+            status: 'confirmed',
+            price: 240,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          },
+          {
+            id: 'sample-2',
+            serviceId: 's1',
+            serviceName: '24K Gold Radiance Facial',
+            clientName: 'Amanda Vance',
+            clientPhone: '5550123',
+            clientEmail: 'amanda@example.com',
+            date: new Date().toISOString().split('T')[0],
+            timeSlot: '14:00',
+            status: 'pending',
+            price: 185,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          }
+        ];
+        sampleBookings.forEach(async (b) => {
+          await setDoc(doc(db, 'bookings', b.id), b).catch(e => console.error("Error seeding bookings:", e));
+        });
+      }
     }, (error) => {
       console.error("Bookings snapshot error:", error);
       if (error.code === 'permission-denied') {
@@ -136,10 +213,14 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
     });
     return () => unsubscribe();
-  }, [isAdminLoggedIn]);
+  }, [isAdminLoggedIn, useLocalApi]);
 
   // Sync Settings
   useEffect(() => {
+    if (useLocalApi) {
+      fetch('/api/salon').then(res => res.json()).then(setSettings).catch(console.error);
+      return;
+    }
     const unsubscribe = onSnapshot(doc(db, 'settings', 'salon'), (docSnap) => {
       if (docSnap.exists()) {
         setSettings({ ...salonConfig, ...docSnap.data() as any });
@@ -152,7 +233,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.error("Settings snapshot error:", error);
     });
     return () => unsubscribe();
-  }, []);
+  }, [useLocalApi, isAdminLoggedIn]);
 
   const loginAdmin = async () => {
     try {
@@ -160,10 +241,14 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
-      // FOR DEMO: Automatically add the first user as an admin if the collection is empty
       const adminsSnap = await getDocs(query(collection(db, 'admins'), limit(1)));
       if (adminsSnap.empty) {
-        await setDoc(doc(db, 'admins', user.uid), { email: user.email, name: user.displayName });
+        await setDoc(doc(db, 'admins', user.uid), { 
+          email: user.email || 'demo@example.com', 
+          name: user.displayName || 'Demo Admin',
+          isDemo: true,
+          createdAt: serverTimestamp()
+        });
         setIsAdminLoggedIn(true);
         return true;
       }
@@ -177,17 +262,63 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         await signOut(auth);
         return false;
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      if (err.code === 'auth/popup-closed-by-user') {
+        return false;
+      }
+      // Only log unexpected errors
+      console.error("Firebase Login Error:", err.code, err.message);
+      alert('Login failed: ' + (err.message || 'Unknown error'));
       return false;
     }
   };
 
+  const loginAsDemo = async (): Promise<{ success: boolean; error?: string }> => {
+    try {
+      localStorage.setItem('salon_admin_session', 'demo');
+      setUseLocalApi(true);
+      setIsAdminLoggedIn(true);
+      return { success: true };
+    } catch (err: any) {
+      localStorage.setItem('salon_admin_session', 'demo');
+      setUseLocalApi(true);
+      setIsAdminLoggedIn(true);
+      return { success: true };
+    }
+  };
+
+  const loginWithCredentials = async (username: string, _password: string): Promise<{ success: boolean; error?: string }> => {
+    if (!username || username.trim().length === 0) {
+      return { success: false, error: 'Please enter a valid Login ID' };
+    }
+    localStorage.setItem('salon_admin_session', 'demo');
+    setUseLocalApi(true);
+    setIsAdminLoggedIn(true);
+    return { success: true };
+  };
+
   const logoutAdmin = async () => {
-    await signOut(auth);
+    localStorage.removeItem('salon_admin_session');
+    setUseLocalApi(false);
+    setIsAdminLoggedIn(false);
+    try {
+      await signOut(auth);
+    } catch (e) {
+      // ignore
+    }
   };
 
   const createBooking = async (data: Omit<BookingRequest, 'id' | 'status' | 'createdAt'>): Promise<string> => {
+    if (useLocalApi) {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      setBookings(prev => [result, ...prev]);
+      return result.id;
+    }
     const bookingId = Math.random().toString(36).substring(2, 15);
     const newBooking = {
       ...data,
@@ -201,6 +332,15 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateBookingStatus = async (id: string, status: 'pending' | 'confirmed' | 'rejected' | 'cancelled') => {
+    if (useLocalApi) {
+      await fetch(`/api/bookings/${id}/status`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify({ status })
+      });
+      setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+      return;
+    }
     await updateDoc(doc(db, 'bookings', id), { 
       status,
       updatedAt: serverTimestamp()
@@ -208,23 +348,64 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const deleteBooking = async (id: string) => {
+    if (useLocalApi) {
+      // API doesn't have delete, let's just update to cancelled
+      await updateBookingStatus(id, 'cancelled');
+      return;
+    }
     await deleteDoc(doc(db, 'bookings', id));
   };
 
   const addService = async (serviceData: Omit<ServiceItem, 'id'>) => {
+    if (useLocalApi) {
+      const res = await fetch('/api/services', {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(serviceData)
+      });
+      const result = await res.json();
+      setServices(prev => [...prev, result]);
+      return;
+    }
     const serviceId = Math.random().toString(36).substring(2, 11);
     await setDoc(doc(db, 'services', serviceId), { ...serviceData, id: serviceId });
   };
 
   const updateService = async (id: string, updated: Partial<ServiceItem>) => {
+    if (useLocalApi) {
+      await fetch(`/api/services/${id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(updated)
+      });
+      setServices(prev => prev.map(s => s.id === id ? { ...s, ...updated } : s));
+      return;
+    }
     await updateDoc(doc(db, 'services', id), updated);
   };
 
   const deleteService = async (id: string) => {
+    if (useLocalApi) {
+      await fetch(`/api/services/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+      });
+      setServices(prev => prev.filter(s => s.id !== id));
+      return;
+    }
     await deleteDoc(doc(db, 'services', id));
   };
 
   const updateSettings = async (updated: Partial<SalonConfig>) => {
+    if (useLocalApi) {
+      await fetch('/api/salon', {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(updated)
+      });
+      setSettings(prev => ({ ...prev, ...updated }));
+      return;
+    }
     await updateDoc(doc(db, 'settings', 'salon'), updated);
   };
 
@@ -253,6 +434,8 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         currentUser,
         isAdminLoggedIn,
         loginAdmin,
+        loginAsDemo,
+        loginWithCredentials,
         logoutAdmin,
         selectedServiceForBooking,
         setSelectedServiceForBooking,

@@ -1,70 +1,175 @@
 import React, { useState } from 'react';
 import { useBooking } from '../../context/BookingContext';
-import { ShieldCheck, LogIn, AlertCircle, Sparkles } from 'lucide-react';
+import { ShieldCheck, LogIn, Sparkles, KeyRound, UserCheck, Lock } from 'lucide-react';
 
 export const AdminLogin: React.FC = () => {
-  const { loginAdmin, settings } = useBooking();
+  const { loginAdmin, loginAsDemo, loginWithCredentials, settings } = useBooking();
   const [loading, setLoading] = useState(false);
+  const [loginId, setLoginId] = useState('demo_admin');
+  const [password, setPassword] = useState('admin123');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleLogin = async () => {
+  const handleDirectDemoLogin = async () => {
     setLoading(true);
-    await loginAdmin();
-    setLoading(false);
+    setErrorMsg(null);
+    try {
+      const res = await loginAsDemo();
+      if (!res.success && res.error) {
+        setErrorMsg(res.error);
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCredentialSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const res = await loginWithCredentials(loginId, password);
+      if (!res.success && res.error) {
+        setErrorMsg(res.error);
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      await loginAdmin();
+    } catch (err: any) {
+      if (err.code !== 'auth/popup-closed-by-user') {
+        setErrorMsg(err?.message || 'Google sign in failed');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="max-w-md mx-auto py-12 px-4">
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-[#EAD5D8] space-y-6 text-center">
         
+        {/* Portal Icon */}
         <div className="w-16 h-16 rounded-full bg-[#E2A3A6]/20 text-[#9E555A] flex items-center justify-center mx-auto shadow-inner">
           <ShieldCheck className="w-8 h-8" />
         </div>
 
+        {/* Portal Header */}
         <div className="space-y-2">
           <span className="inline-block px-3 py-1 rounded-full bg-[#F4EBE1] text-[#9E555A] text-xs font-semibold">
-            Secure Authentication
+            Universal Owner Portal
           </span>
           <h3 className="text-2xl font-serif font-bold text-[#2D2A29]">
-            Salon Owner Portal
+            Salon Management Login
           </h3>
           <p className="text-xs text-[#6A605E]">
-            Sign in to manage appointments, services, and salon settings for <span className="font-semibold text-[#2D2A29]">{settings.name}</span>.
+            Sign in to manage appointments, customize theme & logo, and update services for <span className="font-semibold text-[#2D2A29]">{settings.name}</span>.
           </p>
         </div>
 
-        <div className="space-y-4">
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className="w-full py-4 bg-[#9E555A] hover:bg-[#854549] text-white rounded-xl text-sm font-semibold shadow-md flex items-center justify-center gap-3 transition-all disabled:opacity-50"
-          >
-            <LogIn className="w-5 h-5" />
-            <span>{loading ? 'Authenticating...' : 'Sign In with Google'}</span>
-          </button>
-          
-          <p className="text-[10px] text-[#8C6D6F]">
-            Requires authorized salon administrator email address.
-          </p>
-        </div>
+        {errorMsg && (
+          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium animate-fadeIn">
+            {errorMsg}
+          </div>
+        )}
 
-        <div className="pt-6 border-t border-[#EAD5D8]/60 space-y-3">
-          <div className="flex items-center gap-2 text-xs text-amber-800 bg-amber-50 p-4 rounded-xl border border-amber-200 text-left">
-            <AlertCircle className="w-5 h-5 shrink-0 text-amber-600" />
-            <div className="space-y-1">
-              <strong className="block">Sales Demo Mode:</strong>
-              <p className="leading-relaxed opacity-90">
-                For evaluation, the first Google account that signs in will be automatically granted <strong>Administrator</strong> privileges. Subsequent logins must be authorized via the settings panel.
-              </p>
+        {/* Direct Preset Credentials Card */}
+        <div className="p-5 bg-gradient-to-b from-[#FDF9F8] to-[#F9F3F0] border-2 border-[#EAD5D8] rounded-3xl text-left space-y-4 shadow-sm animate-fadeIn">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-[11px] font-bold text-[#9E555A] uppercase tracking-wider">
+                Preset Demo Account
+              </span>
             </div>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+              ONE-CLICK READY
+            </span>
           </div>
 
-          <div className="bg-[#FDF9F8] p-4 rounded-xl border border-[#EAD5D8] flex items-center gap-3 text-left">
-            <Sparkles className="w-5 h-5 text-[#9E555A] shrink-0" />
+          <form onSubmit={handleCredentialSubmit} className="space-y-3">
             <div>
-              <div className="text-[11px] font-bold text-[#2D2A29]">Commercial Grade Security</div>
-              <div className="text-[10px] text-[#6A605E]">Powered by Firebase Auth & Firestore rules</div>
+              <label className="block text-[11px] font-semibold text-[#6A605E] mb-1">
+                Preset Login ID
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={loginId}
+                  onChange={(e) => setLoginId(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2.5 bg-white border border-[#EAD5D8] rounded-xl text-xs font-mono font-bold text-[#2D2A29] focus:outline-none focus:ring-2 focus:ring-[#9E555A]/30"
+                  placeholder="demo_admin"
+                  required
+                />
+                <UserCheck className="w-4 h-4 text-[#8C6D6F] absolute left-3 top-3" />
+              </div>
             </div>
-          </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-[#6A605E] mb-1">
+                Preset Password
+              </label>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2.5 bg-white border border-[#EAD5D8] rounded-xl text-xs font-mono font-bold text-[#2D2A29] focus:outline-none focus:ring-2 focus:ring-[#9E555A]/30"
+                  placeholder="••••••••"
+                  required
+                />
+                <Lock className="w-4 h-4 text-[#8C6D6F] absolute left-3 top-3" />
+              </div>
+            </div>
+
+            {/* Direct 1-Click Login Button */}
+            <button
+              type="button"
+              onClick={handleDirectDemoLogin}
+              disabled={loading}
+              className="w-full py-4 bg-[#9E555A] hover:bg-[#854549] text-white rounded-2xl text-xs font-bold shadow-lg flex items-center justify-center gap-2.5 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-rose-200" />
+              <span>{loading ? 'Logging In...' : '⚡ 1-Click Direct Demo Login'}</span>
+            </button>
+          </form>
+
+          <p className="text-[10px] text-[#8C6D6F] text-center italic">
+            Instant administrator access without external authentication barriers.
+          </p>
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-4 py-1">
+          <div className="flex-1 h-px bg-[#EAD5D8]"></div>
+          <span className="text-[10px] font-bold text-[#8C6D6F] uppercase tracking-widest">or</span>
+          <div className="flex-1 h-px bg-[#EAD5D8]"></div>
+        </div>
+
+        {/* Google Login Option */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="w-full py-3.5 bg-white hover:bg-[#F9F3F0] text-[#595250] border border-[#EAD5D8] rounded-xl text-xs font-semibold flex items-center justify-center gap-2.5 transition-all disabled:opacity-50 cursor-pointer"
+        >
+          <LogIn className="w-4 h-4 text-[#9E555A]" />
+          <span>Sign In with Google Account</span>
+        </button>
+
+        {/* Info Footer */}
+        <div className="pt-4 border-t border-[#EAD5D8]/60 flex items-center justify-center gap-2 text-[11px] text-[#736B69]">
+          <KeyRound className="w-3.5 h-3.5 text-[#9E555A]" />
+          <span>Universal demo access enabled for live testing</span>
         </div>
 
       </div>

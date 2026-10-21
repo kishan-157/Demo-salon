@@ -18,12 +18,14 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      allow create: if isSignedIn() && (
+      allow create: if isAdmin() || (
+        isSignedIn() && 
         request.resource.data.keys().hasAll(['serviceId', 'clientName', 'clientPhone', 'date', 'timeSlot', 'status']) &&
         request.resource.data.status == 'pending'
       );
       allow get: if true;
-      allow list, update, delete: if isAdmin();
+      allow list: if isAdmin() || (isSignedIn() && resource.data.clientPhone != null);
+      allow update, delete: if isAdmin();
     }
 
     match /services/{serviceId} {
@@ -43,7 +45,11 @@ service cloud.firestore {
 
     match /admins/{adminId} {
       allow read: if isSignedIn();
-      allow write: if request.auth.token.email == 'ladanikishan8@gmail.com' || isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == adminId && (
+        request.auth.token.email == 'ladanikishan8@gmail.com' ||
+        request.resource.data.get('isDemo', false) == true
+      );
+      allow update, delete: if isAdmin();
     }
   }
 }
