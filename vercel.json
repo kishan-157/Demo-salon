@@ -1,0 +1,51 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "app": {
+      "root": ".",
+      "framework": "vite",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "customer-app",
+          "format": "url",
+          "env": "CUSTOMER_APP_URL"
+        },
+        {
+          "type": "service",
+          "service": "owner-app",
+          "format": "url",
+          "env": "OWNER_APP_URL"
+        }
+      ]
+    },
+    "customer-app": {
+      "root": "mobile/customer-app",
+      "framework": "vite"
+    },
+    "owner-app": {
+      "root": "mobile/owner-app",
+      "framework": "vite"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/customer/(.*)",
+      "destination": {
+        "service": "customer-app"
+      }
+    },
+    {
+      "source": "/owner/(.*)",
+      "destination": {
+        "service": "owner-app"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "app"
+      }
+    }
+  ]
+}

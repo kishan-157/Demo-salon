@@ -71,7 +71,7 @@ export default function CustomerApp() {
     if (user && screen === 'my-bookings') {
       const q = query(
         collection(db, 'bookings'), 
-        where('customerPhone', '==', bookingData.phone || 'demo'), 
+        where('clientPhone', '==', bookingData.phone || 'demo'), 
         orderBy('createdAt', 'desc')
       );
       return onSnapshot(q, (snap) => {
@@ -85,10 +85,10 @@ export default function CustomerApp() {
     await addDoc(collection(db, 'bookings'), {
       serviceId: selectedService.id,
       serviceName: selectedService.name,
-      customerName: bookingData.name,
-      customerPhone: bookingData.phone,
+      clientName: bookingData.name,
+      clientPhone: bookingData.phone,
       date: bookingData.date,
-      time: bookingData.time,
+      timeSlot: bookingData.time,
       status: 'pending',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),

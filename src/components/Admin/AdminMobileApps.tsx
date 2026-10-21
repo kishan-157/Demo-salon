@@ -273,7 +273,10 @@ export const AdminMobileApps: React.FC = () => {
                 >
                   Close Preview
                 </button>
-                <button className="px-6 py-2.5 rounded-full text-xs font-semibold bg-[#9E555A] text-white hover:bg-[#854549] shadow-md transition-all flex items-center gap-2">
+                <button 
+                  onClick={() => window.open(activePreview === 'customer' ? '/customer' : '/owner', '_blank')}
+                  className="px-6 py-2.5 rounded-full text-xs font-semibold bg-[#9E555A] text-white hover:bg-[#854549] shadow-md transition-all flex items-center gap-2"
+                >
                   <Play className="w-4 h-4" />
                   Launch Interactive Demo
                 </button>

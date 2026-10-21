@@ -24,10 +24,10 @@ import {
 interface Booking {
   id: string;
   serviceName: string;
-  customerName: string;
-  customerPhone: string;
+  clientName: string;
+  clientPhone: string;
   date: string;
-  time: string;
+  timeSlot: string;
   status: 'pending' | 'confirmed' | 'rejected' | 'cancelled';
   price: number;
 }
@@ -177,8 +177,8 @@ export default function OwnerApp() {
                         <Scissors className="w-5 h-5" />
                       </div>
                       <div>
-                        <h6 className="text-xs font-bold text-[#2D2A29]">{b.customerName}</h6>
-                        <p className="text-[10px] text-[#6A605E]">{b.serviceName} • {b.time}</p>
+                        <h6 className="text-xs font-bold text-[#2D2A29]">{b.clientName}</h6>
+                        <p className="text-[10px] text-[#6A605E]">{b.serviceName} • {b.timeSlot}</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -216,13 +216,13 @@ export default function OwnerApp() {
                         <User className="w-6 h-6" />
                       </div>
                       <div>
-                        <h5 className="font-bold text-[#2D2A29]">{b.customerName}</h5>
-                        <p className="text-xs text-[#6A605E]">{b.customerPhone}</p>
+                        <h5 className="font-bold text-[#2D2A29]">{b.clientName}</h5>
+                        <p className="text-xs text-[#6A605E]">{b.clientPhone}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-xs font-bold text-[#2D2A29]">{b.date}</div>
-                      <div className="text-[10px] text-[#9E555A] font-bold uppercase">{b.time}</div>
+                      <div className="text-[10px] text-[#9E555A] font-bold uppercase">{b.timeSlot}</div>
                     </div>
                   </div>
                   
@@ -262,11 +262,11 @@ export default function OwnerApp() {
               <div key={b.id} className="bg-white p-4 rounded-3xl border border-[#EAD5D8] shadow-sm flex items-center justify-between border-l-4 border-l-emerald-500">
                 <div className="flex items-center gap-4">
                   <div className="text-center min-w-[50px] border-r border-[#EAD5D8] pr-4 mr-2">
-                    <p className="text-sm font-bold text-[#2D2A29]">{b.time}</p>
+                    <p className="text-sm font-bold text-[#2D2A29]">{b.timeSlot}</p>
                     <p className="text-[9px] text-[#9E555A] font-bold uppercase">TODAY</p>
                   </div>
                   <div>
-                    <h6 className="text-sm font-bold text-[#2D2A29]">{b.customerName}</h6>
+                    <h6 className="text-sm font-bold text-[#2D2A29]">{b.clientName}</h6>
                     <p className="text-[10px] text-[#6A605E]">{b.serviceName}</p>
                   </div>
                 </div>
